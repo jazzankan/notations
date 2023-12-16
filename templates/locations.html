@@ -1,0 +1,34 @@
+<!DOCTYPE html>
+<html lang="sv">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Noterat</title>
+  <link href="{{ url_for('static', path='/css/main.css') }}" rel="stylesheet">
+  <link rel="icon" type="image/x-icon" href="/img/favicon.ico">
+</head>
+<body class="max-w-2xl ml-20">
+  <h1 class="font-medium leading-tight text-5xl mt-0 text-green-600 mb-4">Länkar</h1>
+  <p class="mb-2"><a class="text-blue-800" href="/createlocation">Skapa länk</a></p>
+  <hr>
+    {% for location in locations |sort(attribute='prio') %}
+    <ul class="my-4">
+      <li><a class="text-blue-600" href="{{ location.url }}" target="_blank">{{ location.title }}</a><br>
+        <button class="btn-small text-sm" onclick="myFunction({{ location.id }})">Kommentar</button> Prio: {{ location.prio }}<a href="/modifylocation/{{ location.id }} "><img class="inline-block align-middle ml-4" width="20" height="20" src="/img/edit.png" alt="Redigera"></a>
+        <br>
+        <span class="mb-4" style="display:none" id="{{location.id }}">{{ location.comment }}</span>
+        <hr>
+      </li>
+    </ul>
+    {% endfor %}
+</body>
+<script>function myFunction(id) {
+  let x = document.getElementById(id);
+  if (x.style.display === "none") {
+    x.style.display = "block";
+  } else {
+    x.style.display = "none";
+  }
+}
+</script>
+</html>

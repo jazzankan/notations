@@ -1,0 +1,45 @@
+<!DOCTYPE html>
+<html lang="sv">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Skapa länk</title>
+  <link href="{{ url_for('static', path='/css/main.css') }}" rel="stylesheet">
+  <link rel="icon" type="image/x-icon" href="/img/favicon.ico">
+</head>
+<body class="ml-10">
+  <h2 class=" text-green-600 mb-8">Skapa länk</h2>
+<div class="w-full max-w-2xl">
+  <form action="add_location" method="POST" class="bg-white shadow-md rounded px-8 pt-6 pb-8 mb-4">
+    <div class="mb-4">
+      <label class="block text-gray-700 text-sm font-bold mb-2" for="title">
+        Titel
+      </label>
+      <input class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline" id="title" name="title" type="text">
+    </div>
+    <div class="mb-4">
+      <label class="block text-gray-700 text-sm font-bold mb-2" for="url">
+        URL
+      </label>
+      <input class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline" id="url" name="url" type="text">
+    </div>
+    <div class="mb-4">
+      <label class="block text-gray-700 text-sm font-bold mb-2" for="comment">
+        Kommentar
+      </label>
+      <textarea class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline" id="comment" name="comment"></textarea>
+    </div>
+    <div class="mb-4">
+      <label class="block text-gray-700 text-sm font-bold mb-2" for="prio">
+        Prio 1-10
+      </label>
+      <input maxlength="2" class="w-12 shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline" id="prio" name="prio" type="text">
+    </div>
+    <button type="submit" class="btn-small">
+  Skicka
+</button>
+  </form>
+</div>
+
+</body>
+</html>
