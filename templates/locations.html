@@ -10,6 +10,7 @@
 <body class="max-w-2xl ml-20">
   <h1 class="font-medium leading-tight text-5xl mt-0 text-green-600 mb-4">Länkar</h1>
   <p class="mb-2"><a class="text-blue-800" href="/createlocation">Skapa länk</a></p>
+  {{ exceptions }}
   <hr>
     {% for location in locations |sort(attribute='prio') %}
     <ul class="my-4">

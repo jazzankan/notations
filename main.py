@@ -6,10 +6,9 @@ from typing import Annotated, List
 from fastapi.templating import Jinja2Templates
 from starlette.responses import RedirectResponse
 import models
-from database import engine, SessionLocal, Locations
+from database import engine, ValidLoc, SessionLocal, ValidationError
 from sqlalchemy import update
 from sqlalchemy.orm import Session
-
 
 edit_png = "/img/edit.png"
 app = FastAPI()
@@ -46,7 +45,7 @@ def name(request: Request):
     return templates.TemplateResponse("home.html", {"request": request, "name": "codingwithroby"})
 
 
-@app.get("/locations", response_model=List[Locations], status_code=status.HTTP_200_OK)
+@app.get("/locations", response_model=List[ValidLoc], status_code=status.HTTP_200_OK)
 async def read_locations(request: Request, db: db_dependency):
     locations = db.query(models.Locations).all()
     return templates.TemplateResponse("locations.html", {"request": request, "locations": locations})
@@ -57,7 +56,7 @@ async def create_location(request: Request, db: db_dependency):
     return templates.TemplateResponse("createlocation.html", {"request": request})
 
 
-@app.get("/modifylocation/{location_id}", response_model=Locations, status_code=status.HTTP_200_OK)
+@app.get("/modifylocation/{location_id}", response_model=ValidLoc, status_code=status.HTTP_200_OK)
 async def change_location(request: Request, location_id: int, db: db_dependency):
     location = db.query(models.Locations).filter(models.Locations.id == location_id).first()
     if location is None:
@@ -66,7 +65,7 @@ async def change_location(request: Request, location_id: int, db: db_dependency)
                                       {"request": request, "location": location})
 
 
-@app.get("/locations/{location_id}", response_model=Locations, status_code=status.HTTP_200_OK)
+@app.get("/locations/{location_id}", response_model=ValidLoc, status_code=status.HTTP_200_OK)
 async def delete_location(location_id: int, db: db_dependency):
     location = db.query(models.Locations).filter(models.Locations.id == location_id).first()
     if location is None:
@@ -77,7 +76,7 @@ async def delete_location(location_id: int, db: db_dependency):
     return response
 
 
-@app.delete("/locations/{location_id}", response_model=Locations, status_code=status.HTTP_200_OK)
+@app.delete("/locations/{location_id}", response_model=ValidLoc, status_code=status.HTTP_200_OK)
 async def read_location(location_id: int, db: db_dependency):
     location = db.query(models.Locations).filter(models.Locations.id == location_id).first()
     if location is None:
@@ -86,31 +85,36 @@ async def read_location(location_id: int, db: db_dependency):
 
 
 @app.post("/add_location", status_code=status.HTTP_201_CREATED)
-async def create_location(db: db_dependency, title: Annotated[str, Form()], url: Annotated[str, Form()],
-                          comment: Annotated[str, Form()], prio: Annotated[int, Form()]):
+async def create_location(request: Request,db: db_dependency, title: Annotated[str, Form()], url: Annotated[str, Form()],
+                          prio: Annotated[int, Form()], comment: Annotated[str | None, Form()] = None):
     location = models.Locations(title=title, url=url, comment=comment, prio=prio)
-    db.add(location)
-    db.commit()
-    response = RedirectResponse("/locations", status_code=303)
-    return response
+    exceptions = ""
+    try:
+        ValidLoc(title=title, url=url, comment=comment, prio=prio)
+        db.add(location)
+        db.commit()
+    except ValidationError as ex:
+        exceptions = ex
+        print(ex)
+    return templates.TemplateResponse("locations.html",
+                                      {"request": request, "exceptions": exceptions})
+    # response = RedirectResponse("/locations",status_code=303)
+    # return response
 
 
-@app.post("/location/modify/{location_id}", response_model=Locations, status_code=status.HTTP_200_OK)
+@app.post("/location/modify/{location_id}", response_model=ValidLoc, status_code=status.HTTP_200_OK)
 async def modify_location(db: db_dependency, location_id: int, title: Annotated[str, Form()],
                           url: Annotated[str, Form()], prio: Annotated[int, Form()],
-                          comment: Annotated[str, Form()] = None, delete: Annotated[str, Form()] = None):
+                          comment: Annotated[str | None, Form()] = None, delete: Annotated[str | None, Form()] = None):
     location = db.query(models.Locations).filter(models.Locations.id == location_id).first()
     if location is None:
         raise HTTPException(status_code=404, detail='Posten finns inte')
     if delete == 'delete':
         db.delete(location)
     modified_location = update(models.Locations).where(models.Locations.id == location_id).values(title=title, url=url,
-                                                                                          comment=comment, prio=prio)
+                                                                                                  comment=comment,
+                                                                                                  prio=prio)
     db.execute(modified_location)
     db.commit()
     response = RedirectResponse("/locations", status_code=303)
     return response
-
-
-
-
